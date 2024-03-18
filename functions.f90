@@ -83,11 +83,36 @@ integer(int64) pure recursive function factorial(x) result(r)
     end if
 end function factorial
 
+! functions with optional arguments
+integer(int64) pure function definition_6(x, inc) result(r)
+    use iso_fortran_env
+    implicit none
+    integer(int64), intent(in) :: x
+    integer(int64), intent(in), optional :: inc
+    if(present(inc)) then   ! if the optional argument inc is provided at the call site
+        r = x + inc ! increment the input by the given value
+    else
+        r = x + 1   ! else just increment the input by one
+    end if
+end function definition_6
+
+
+
 program main
     use functions
     implicit none
     integer(int64) :: n = 100
-    integer(int64), external :: factorial   ! interface to the external freestanding function
+    integer(int64), external :: factorial   ! interface to the external freestanding functions
+    ! removed the definition_6 return type interface as we provide a dedicated explicit interface below
+
+    interface
+        integer(int64) pure function definition_6(x, inc) result(r)
+            use iso_fortran_env
+            implicit none
+            integer(int64), intent(in) :: x
+            integer(int64), intent(in), optional :: inc
+        end function definition_6
+    end interface
 
     print*, "12 + 1 = ", definition_0(12_int64)
     print*, "12 + 1 = ", definition_1(12_int64)
@@ -100,5 +125,18 @@ program main
     do n = 0, 20, 1
         print*, "factorial of ", n, " is ", factorial(n)
     end do
+
+    ! okay, as long as we do not pass in an optional argument.
+    print*, "definition_6(12) = ", definition_6(12_int64)
+
+    ! when invoking a function that takes optional argument/s, a complete explicit interface is needed
+    ! return type interfaces are not enough!
+    ! print*, "definition_6(12, 10) = ", definition_6(12_int64, 10_int64) is a compile time error_unit
+    ! The procedure has a dummy argument that has the ALLOCATABLE, ASYNCHRONOUS, OPTIONAL, POINTER, TARGET, VALUE or VOLATILE
+    ! attribute. Required explicit interface is missing from original source.
+
+    ! interfaces must be grouped with the variable declarations, aren't valid in the executable section.
+    print*, "definition_6(12, 10) = ", definition_6(12_int64, 10_int64)
+    ! now that we have an explicit interface, this will work just as fine
 
 end program main

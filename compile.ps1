@@ -18,20 +18,26 @@ if ($unrecognized.Count -ne 0) {
 
 $cflags = @(
     "/align:all", # adds padding bytes whenever possible to data items in common blocks and structures
-    "/auto", # makes all local, non-saved variables to be allocated on stack
+    "/convert:little_endian",    # byte order to serialize multibyte numeric data to files
+    # little endian for integer data and little endian IEEE floating-point for real and complex data
+    # however this conversion doesn't apply when serializing user defined types, but valid when numeric members of such types are serialized individually
     "/debug:none",
     "/extend-source:132",
     "/F0x3200000", # stack size in bytes (50 MiB)
+    "/fpconstant", # single-precision constants assigned to double-precision variables should be evaluated in double precision.
     "/fp:strict", # enables precise and except, disables contractions, and enables the property that allows modification of the floating-point
     # environment.
     "/fpe:0", # floating-point invalid, divide-by-zero, and overflow exceptions are enabled throughout the application.
     "/fpe-all:0",
     "/free",
     "/GF",  # enables read-only string pooling optimizations.
+    "/GS:strong", # guard stack, compiler will provide full stack security level checking.
     "/guard:cf",    # enables the control flow protection mechanism.
     "/heap-arrays:5120",# put automatic arrays and arrays bigger than 5 MiBs created for temporary computations on the heap instead of the stack.
     # the value is in KiBs.
-    "/MP",
+    "/integer-size:64", # integer and logical variables and constants with unspecified kind parameter are treated as if they are declared with (kind=8)
+    "/MP:8",
+    "/MT", # link to multithreaded static libraries (without debug symbols)
     "/names:lowercase", # changing this can cause unresolved symbol errors at link time.
     "/noaltparam", # alternate syntax for PARAMETER statements is disallowed. i.e PARAMETER c = expr [, c = expr] ...
     <#
@@ -43,6 +49,7 @@ $cflags = @(
     "/nofixed",
     "/nofltconsistency", # provides better accuracy and runtime performance at the expense of less consistent floating-point results.
     "/nofpp",
+    "/nogen-interfaces",
     "/norecursive",
     "/noreentrancy", # tells the runtime library (RTL) that the program does not rely on threaded or asynchronous reentrancy. The RTL will not guard against
     # such interrupts inside its own critical regions.
@@ -65,12 +72,16 @@ $cflags = @(
     "/Qcf-protection:full", # enables shadow stack protection and endbranch (EB) generation.
     # "/Qcoarray:shared",
     # "/Qcoarray-num-images:8",
+    "/Qdiag-warning=all", # all diagnostic messages are enabled.
+    "/Qfnalign:64", # align procedures at 64 byte boundaries
     "/Qfma",
     "/Qfp-speculation:strict", # disable speculation as they may cause a floating-point exception.
     "/Qftz-", # do not flush undeflow results to zero.
     "/Qimf-domain-exclusion:0", # input arguments domains on which math functions must provide correct results. - all of them
     # (extremes, nans, infinities, denormals, zeros & none)
     "/Qimf-precision:high", # equivalent to max-error = 1.0.
+    "/Qinit:arrays,huge", # tells the compiler to initialize all uninitialized arrays and scalars to the largest positive value they/their element type can hold
+    # helpful in error detection
     "/Qipo", # alias for -flto=full, enables full link time optimizations.
     "/Qm64", # compiler generates code for Intel® 64 architecture
     "/Qopt-dynamic-align",
@@ -93,9 +104,12 @@ $cflags = @(
     "/Qvec-threshold:100", # vectorize loops only when 100% sure of a potential performance boost
     "/Qvec-with-mask",
     "/QxTIGERLAKE",   # processor features the compiler may target, including which instruction sets and optimizations it may generate
+    "/real-size:64", # like /integer-size
     "/stand:f18",
     "/tune:tigerlake", # i5-1135G7
-    "/warn:all",
+    "/warn:all",    # /warn:all implies /warn:interface which enables the generation and use of interfaces (both implicit and explicit) for error checking
+    # with /gen-interfaces, this results in the creation of <name>__genmod.f90 and <name>__genmod.mod files
+    # to disable the creation of such files specify /nogen-interfaces
     "/wrap-margin-", # by default, Fortran introduces line breaks ("wrapping the right margin of records" in Fortran parlance) when the characters are past 80 columns
     # /wrap-margin- disables it
     "/link /DEBUG:NONE /guard:cf"
@@ -108,5 +122,6 @@ ifx.exe $cfiles $cflags
 if ($? -eq $True){
     foreach($file in $cfiles){
         Remove-Item $file.Replace(".f90", ".obj") -Force
+        Remove-Item $file.Replace(".f90", ".pdb") -Force
     }
 }
