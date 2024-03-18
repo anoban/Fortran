@@ -205,3 +205,8 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Fortran module interfaces
+*__genmod.f90
+# Fortran compiled modules
+*.mod

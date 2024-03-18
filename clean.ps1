@@ -7,4 +7,6 @@ Get-ChildItem *.dll -Recurse | Foreach-Object {Remove-Item $_.FullName -Force}
 Get-ChildItem *.lib -Recurse | Foreach-Object {Remove-Item $_.FullName -Force}
 Get-ChildItem *.ilk -Recurse | Foreach-Object {Remove-Item $_.FullName -Force}
 Get-ChildItem *.i   -Recurse | Foreach-Object {Remove-Item $_.FullName -Force}
+Get-ChildItem *.i90 -Recurse | Foreach-Object {Remove-Item $_.FullName -Force}
 Get-ChildItem *.mod -Recurse | Foreach-Object {Remove-Item $_.FullName -Force}
+Get-ChildItem *__genmod.f90 -Recurse | Foreach-Object {Remove-Item $_.FullName -Force}

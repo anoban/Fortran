@@ -18,6 +18,7 @@ if ($unrecognized.Count -ne 0) {
 
 $cflags = @(
     "/align:all", # adds padding bytes whenever possible to data items in common blocks and structures
+    "/auto", # makes all local, non-saved variables to be allocated on stack
     "/debug:none",
     "/extend-source:132",
     "/F0x3200000", # stack size in bytes (50 MiB)
@@ -95,6 +96,8 @@ $cflags = @(
     "/stand:f18",
     "/tune:tigerlake", # i5-1135G7
     "/warn:all",
+    "/wrap-margin-", # by default, Fortran introduces line breaks ("wrapping the right margin of records" in Fortran parlance) when the characters are past 80 columns
+    # /wrap-margin- disables it
     "/link /DEBUG:NONE /guard:cf"
 )
 
